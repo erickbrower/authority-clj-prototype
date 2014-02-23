@@ -14,8 +14,12 @@
                  ;; [io.pedestal/pedestal.tomcat "0.2.2"]
                  ]
   :profiles
-  {:dev {:env {:dev true}}
-   :test {:env {:test true}}}
+  {:dev 
+   {:env {:dev true}}
+   :test 
+   {:env {:test true}}
+   :production 
+   {:env {:production true}}}
   :plugins 
   [[lein-environ "0.4.0"]]
   :min-lein-version "2.0.0"
