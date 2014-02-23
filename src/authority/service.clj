@@ -5,11 +5,6 @@
               [io.pedestal.service.http.route.definition :refer [defroutes]]
               [ring.util.response :as ring-resp]))
 
-(defn about-page
-  [request]
-  (ring-resp/response (format "Clojure %s - served from %s"
-                              (clojure-version)
-                              (route/url-for ::about-page))))
 
 (defn home-page
   [request]
@@ -18,8 +13,7 @@
 (defroutes routes
   [[["/" {:get home-page}
      ;; Set default interceptors for /about and any other paths under /
-     ^:interceptors [(body-params/body-params) bootstrap/html-body]
-     ["/about" {:get about-page}]]]])
+     ^:interceptors [(body-params/body-params) bootstrap/html-body]]]])
 
 ;; Consumed by authority.server/create-server
 ;; See bootstrap/default-interceptors for additional options you can configure
