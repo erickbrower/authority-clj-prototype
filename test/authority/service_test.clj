@@ -7,10 +7,13 @@
 (def service
   (::bootstrap/service-fn (bootstrap/create-servlet service/service)))
 
-(deftest home-page-test
+(deftest create-users-test
   (is (=
-       (:body (response-for service :get "/"))
-       "Hello World!"))
-  (is (=
-       (:headers (response-for service :get "/"))
-       {"Content-Type" "text/html;charset=UTF-8"})))
+       (:status (response-for service 
+                            :post 
+                            "/users" 
+                            :headers 
+                            {"Content-Type" "application/json"} 
+                            :body 
+                            "{ \"username\": \"testuser\", \"password\": \"12345678\"}"))
+       200)))
