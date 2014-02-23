@@ -6,12 +6,18 @@
   :dependencies [[org.clojure/clojure "1.5.1"]
                  [io.pedestal/pedestal.service "0.2.2"]
                  [io.pedestal/pedestal.service-tools "0.2.2"]
-
+                 [environ "0.4.0"]
+                 [postgresql/postgresql "9.1-901.jdbc4"]
                  ;; Remove this line and uncomment the next line to
                  ;; use Tomcat instead of Jetty:
                  [io.pedestal/pedestal.jetty "0.2.2"]
                  ;; [io.pedestal/pedestal.tomcat "0.2.2"]
                  ]
+  :profiles
+  {:dev {:env {:dev true}}
+   :test {:env {:test true}}}
+  :plugins 
+  [[lein-environ "0.4.0"]]
   :min-lein-version "2.0.0"
   :resource-paths ["config", "resources"]
   :aliases {"run-dev" ["trampoline" "run" "-m" "authority.server/run-dev"]}
