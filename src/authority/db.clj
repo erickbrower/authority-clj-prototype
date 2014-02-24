@@ -1,24 +1,23 @@
 (ns authority.db
-  (:require [environ.core :refer env])
+  (:require [environ.core :refer [env]])
   (:use korma.core
         [korma.db :only (defdb)]))
 
 (def db-spec
-  {:datasource
-    (doto (new PGPoolingDataSource)
-     (.setServerName   (env :db-host))
-     (.setDatabaseName (env :db-name))
-     (.setUser         (env :db-user))
-     (.setPassword     (env :db-pass))
-     (.setMaxConnections (env :db-max-conns)))})
+  {:subprotocol (env :db-subprotocol)
+   :subname (str "//" (env :db-host) "/" (env :db-name))
+   :user (env :db-user)
+   :password (env :db-pass)})
 
-(defdb db schema/db-spec)
+(defdb db db-spec)
 
 (declare users)
 
 (defentity users
   (entity-fields :id
                  :username
+                 :password_digest
+                 :password_salt
                  :created_at
                  :updated_at))
 
@@ -31,5 +30,9 @@
   (first (select users
                  (where {:id id})
                  (limit 1))))
+
+(defn get-user-by-username [username]
+  (first (select users
+                 (where {:username username}))))
 
 (defn get-user-by-login [username password])

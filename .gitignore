@@ -3,3 +3,4 @@ tmp/
 logs/
 .lein-env
 .lein-failures
+.lein-repl-history

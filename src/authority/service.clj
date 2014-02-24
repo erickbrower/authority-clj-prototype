@@ -1,19 +1,15 @@
 (ns authority.service
     (:require [io.pedestal.service.http :as bootstrap]
               [io.pedestal.service.http.route :as route]
-              [io.pedestal.service.http.body-params :as body-params]
               [io.pedestal.service.http.route.definition :refer [defroutes]]
-              [ring.util.response :as ring-resp]))
+              [io.pedestal.service.http.body-params :as body-params]
+              [authority.handlers :as handlers]))
 
-
-(defn home-page
-  [request]
-  (ring-resp/response "Hello World!"))
 
 (defroutes routes
-  [[["/" {:get home-page}
-     ;; Set default interceptors for /about and any other paths under /
-     ^:interceptors [(body-params/body-params) bootstrap/html-body]]]])
+  [[["/users" 
+     ^:interceptors [(body-params/body-params) bootstrap/json-body]
+     {:post [:create-user handlers/create-user]}]]])
 
 ;; Consumed by authority.server/create-server
 ;; See bootstrap/default-interceptors for additional options you can configure
