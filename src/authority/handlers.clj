@@ -3,8 +3,8 @@
             [authority.db :as db]
             [noir.util.crypt :as crypt]))
 
-(defn create-user [request]
-  (let [inputs (:json-params request)
+(defn create-user [req]
+  (let [inputs (:json-params req)
         username (:username inputs)
         pass (:password inputs)]
     (if (and username pass)
@@ -17,10 +17,13 @@
             (ring-resp/response)))
       (ring-resp/status (ring-resp/response "boo.") 400))))
 
-(defn list-users [request])
+(defn list-users [req])
 
-(defn show-user [request])
+;;TODO create a response formatter
+(defn show-user [req]
+  (let [^String user-id (get-in req [:path-params :id])
+        user (db/get-user user-id)])) 
 
-(defn update-user [request])
+(defn update-user [req])
 
-(defn delete-user [request])
+(defn delete-user [req])

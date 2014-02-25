@@ -21,15 +21,17 @@
                  :created_at
                  :updated_at))
 
+(defn cast [x as]
+  (raw (format "CAST(%s AS %s)" (name x) (name as))))
 
 (defn create-user [user]
   (insert users
           (values user)))
 
+;;TODO do this without exec-raw
 (defn get-user [id]
-  (first (select users
-                 (where {:id id})
-                 (limit 1))))
+  (exec-raw [(str "SELECT * FROM users "
+                  "WHERE users.id = ?::uuid") [id]] :results))
 
 (defn get-user-by-username [username]
   (first (select users

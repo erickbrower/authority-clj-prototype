@@ -22,18 +22,18 @@
   (doall 
     (map #(exec-raw [(str "TRUNCATE TABLE " %)]) all-tables)))
 
-
-(defn json-req-args [verb url body]
+(defn build-json-request [verb url body]
   [service verb url :headers {"Content-Type" "application/json"} :body body])
 
 (defn do-json-request [verb url body]
-  (apply response-for (json-req-args verb url body)))
+  (apply response-for (build-json-request verb url body)))
 
 (defn create-user-request [body]
   (do-json-request :post "/users" body))
 
 (def user-json
   "{\"username\": \"testuser\", \"password\": \"12345678\"}")
+
 
 ;; tests
 (use-fixtures :each truncate-tables)

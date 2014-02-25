@@ -11,11 +11,11 @@
                  [korma "0.3.0-RC6"] 
                  [postgresql/postgresql "9.1-901.jdbc4"]
                  [lib-noir "0.8.1"]
+                 [cheshire "5.3.1"]
                  ;; Remove this line and uncomment the next line to
                  ;; use Tomcat instead of Jetty:
                  ;;[io.pedestal/pedestal.jetty "0.2.2"]
-                 [io.pedestal/pedestal.tomcat "0.2.2"]
-                 ]
+                 [io.pedestal/pedestal.tomcat "0.2.2"]]
   :ragtime {:migrations ragtime.sql.files/migrations
             :database ((keyword (or (System/getenv "CLJ_ENV") "dev"))
                        {:dev "jdbc:postgresql://localhost/authority_dev?user=postgres"
