@@ -1,0 +1,19 @@
+image: bradrydzewski/lein
+
+env:
+  - GOROOT=/usr/local/go
+  - GOPATH=/var/cache/drone
+  - PATH=$GOPATH/bin:$GOPATH/bin:$PATH
+  - CLJ_ENV=test
+
+script:
+  - psql -c 'create database authority_test;' -U postgres
+  - psql authority_test -c 'create extension "uuid-ossp";' -U postgres
+  - lein with-profile test test
+
+notify:
+  email:
+    recipients:
+      - cerickbrower@gmail.com
+    on_success: true
+    on_failure: true
