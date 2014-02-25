@@ -16,3 +16,11 @@
             (str)
             (ring-resp/response)))
       (ring-resp/status (ring-resp/response "boo.") 400))))
+
+(defn list-users [request])
+
+(defn show-user [request])
+
+(defn update-user [request])
+
+(defn delete-user [request])

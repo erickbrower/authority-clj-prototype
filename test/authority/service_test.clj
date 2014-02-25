@@ -5,30 +5,48 @@
             [authority.service :as service]
             [korma.core :refer [exec-raw]]))
 
+;; test helpers
+(def service
+  (::bootstrap/service-fn (bootstrap/create-servlet service/service)))
+
 (def all-tables
   (map #(:table_name %) 
        (exec-raw [(str "SELECT table_name "
                        "FROM information_schema.tables "
                        "WHERE table_schema='public' "
-                       "AND table_type='BASE TABLE'")] :results)))
+                       "AND table_type='BASE TABLE' "
+                       "AND table_name <> 'ragtime_migrations'")] :results)))
 
 (defn truncate-tables [f]
   (f)
-  (doall (map #(exec-raw [(str "TRUNCATE TABLE " %)]) all-tables)))
+  (doall 
+    (map #(exec-raw [(str "TRUNCATE TABLE " %)]) all-tables)))
 
-(def service
-  (::bootstrap/service-fn (bootstrap/create-servlet service/service)))
 
+(defn json-req-args [verb url body]
+  [service verb url :headers {"Content-Type" "application/json"} :body body])
+
+(defn do-json-request [verb url body]
+  (apply response-for (json-req-args verb url body)))
+
+(defn create-user-request [body]
+  (do-json-request :post "/users" body))
+
+(def user-json
+  "{\"username\": \"testuser\", \"password\": \"12345678\"}")
+
+;; tests
 (use-fixtures :each truncate-tables)
 
-(deftest create-users-test
+(deftest create-user
   (is 
-    (= 
-      (:status (response-for service 
-                             :post 
-                             "/users" 
-                             :headers
-                             {"Content-Type" "application/json"}
-                             :body 
-                             "{\"username\": \"testuser\", \"password\": \"12345678\"}")) 
-      200)))
+    (= (:status (create-user-request user-json)) 200)))
+
+(deftest show-user
+  (let [user-id (:body (create-user-request user-json))]
+    (is (= (:status (response-for service
+                                  :get
+                                  (str "/users/" user-id)
+                                  :headers
+                                  {"Content-Type" "application/json"}))))))
+                                  

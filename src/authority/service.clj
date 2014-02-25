@@ -9,7 +9,17 @@
 (defroutes routes
   [[["/users" 
      ^:interceptors [(body-params/body-params) bootstrap/json-body]
-     {:post [:create-user handlers/create-user]}]]])
+     {:post 
+      [:create-user handlers/create-user] 
+      :get 
+      [:list-users handlers/list-users]}
+     ["/:id" 
+      {:get 
+       [:show-user handlers/show-user]
+       :put
+       [:update-user handlers/update-user]
+       :delete
+       [:delete-user handlers/delete-user]}]]]])
 
 ;; Consumed by authority.server/create-server
 ;; See bootstrap/default-interceptors for additional options you can configure
