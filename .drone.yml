@@ -9,6 +9,7 @@ env:
 script:
   - psql -c 'create database authority_test;' -U postgres
   - psql authority_test -c 'create extension "uuid-ossp";' -U postgres
+  - lein with-profile test ragtime migrate
   - lein with-profile test test
 
 notify:
