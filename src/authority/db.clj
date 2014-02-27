@@ -21,7 +21,7 @@
                  :created_at
                  :updated_at))
 
-(defn cast [x as]
+(defn db-cast [x as]
   (raw (format "CAST(%s AS %s)" (name x) (name as))))
 
 (defn create-user [user]
