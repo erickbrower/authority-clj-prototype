@@ -1,7 +1,8 @@
 (ns authority.handlers
   (:require [ring.util.response :as ring-resp]
             [authority.db :as db]
-            [noir.util.crypt :as crypt]))
+            [noir.util.crypt :as crypt]
+            [cheshire.core :as json]))
 
 (defn create-user [req]
   (let [inputs (:json-params req)
@@ -17,7 +18,9 @@
             (ring-resp/response)))
       (ring-resp/status (ring-resp/response "boo.") 400))))
 
-(defn list-users [req])
+(defn list-users [req]
+  (let [users (db/list-users)]
+    (ring-resp/response (json/generate-string users))))
 
 ;;TODO create a response formatter
 (defn show-user [req]

@@ -59,7 +59,7 @@
     (is (= (:status (show-user-request user-id))) 200)))
 
 (deftest list-users
-  (map #(create-user-request %) (take 10 (test-users)))
+  (doall (map #(create-user-request %) (take 10 (test-users))))
   (let [resp (:body (list-users-request))
         users (json/parse-string resp)]
     (is (= (count users) 10))))

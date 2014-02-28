@@ -37,4 +37,6 @@
   (first (select users
                  (where {:username username}))))
 
-(defn get-user-by-login [username password])
+(defn list-users
+  ([] (select users
+              (order :username))))
