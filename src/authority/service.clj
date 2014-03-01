@@ -11,6 +11,7 @@
      ^:interceptors [(body-params/body-params) bootstrap/json-body]
      {:post handlers/create-user :get handlers/list-users}
      ["/:id" 
+      ^:interceptors [handlers/parse-uuid-id]
       {:get handlers/show-user 
        :put handlers/update-user 
        :delete handlers/delete-user}]]]])

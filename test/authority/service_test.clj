@@ -45,20 +45,26 @@
 (defn update-user-request [id user]
   (do-json-request :put (str "/users/" id) (json/generate-string user)))
 
+(defn delete-user-request [id]
+  (do-json-request :delete (str "/users/" id)))
+
 (defn test-users
   ([] (test-users 1))
   ([n] (cons (json/generate-string {:username (str "testuser" n) :password "12345678"})
              (lazy-seq (test-users (inc n))))))
 
+(defn setup-user []
+  (let [resp-body (:body (create-user-request (first (test-users))))]
+    (:id (json/parse-string resp-body true))))
+
 ;; tests
 (use-fixtures :each truncate-tables)
 
 (deftest create-user
-  (is 
-    (= (:status (create-user-request (first (test-users)))) 200)))
+  (is (= (:status (create-user-request (first (test-users)))) 200)))
 
 (deftest show-user
-  (let [user-id (:body (create-user-request (first (test-users))))]
+  (let [user-id (setup-user)]
     (is (= (:status (show-user-request user-id))) 200)))
 
 (deftest list-users
@@ -68,5 +74,9 @@
     (is (= (count users) 10))))
 
 (deftest update-user
-  (let [user-id (:body (create-user-request (first (test-users))))]
-    (is (= (:status (update-user-request user-id {:username "bob"}))))))
+  (let [user-id (setup-user)]
+    (is (= (:status (update-user-request user-id {:username "bob"})) 200))))
+
+(deftest delete-user
+  (let [user-id (setup-user)]
+    (is (= (:status (delete-user-request user-id)) 200))))

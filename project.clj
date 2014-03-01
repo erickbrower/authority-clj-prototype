@@ -14,15 +14,16 @@
                  [cheshire "5.3.1"]
                  ;; Remove this line and uncomment the next line to
                  ;; use Tomcat instead of Jetty:
-                 ;;[io.pedestal/pedestal.jetty "0.2.2"]
-                 [io.pedestal/pedestal.tomcat "0.2.2"]]
+                 ]
+                 ;;[io.pedestal/pedestal.tomcat "0.2.2"]]
   :ragtime {:migrations ragtime.sql.files/migrations
             :database ((keyword (or (System/getenv "CLJ_ENV") "dev"))
                        {:dev "jdbc:postgresql://localhost/authority_dev?user=postgres"
                         :test "jdbc:postgresql://localhost/authority_test?user=postgres"})}
   :profiles
   {:dev 
-   {:env {:dev true
+   {:dependencies [[io.pedestal/pedestal.jetty "0.2.2"]]
+    :env {:dev true
           :db-host "localhost"
           :db-subprotocol "postgresql"
           :db-port "5432"
@@ -31,7 +32,8 @@
           :db-pass ""
           :db-max-conns 20}}
    :test 
-   {:env {:test true
+   {:dependencies [[io.pedestal/pedestal.tomcat "0.2.2"]]
+    :env {:test true
           :db-host "localhost"
           :db-subprotocol "postgresql"
           :db-port "5432"

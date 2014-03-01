@@ -30,9 +30,8 @@
             (values attrs))))
 
 (defn get-user [id]
-  (let [uuid (java.util.UUID/fromString id)]
     (first (select users 
-                   (where {:id uuid})))))
+                   (where {:id id}))))
 
 (defn get-user-by-username [username]
   (first (select users
@@ -43,8 +42,11 @@
               (order :username))))
 
 (defn update-user [id user]
-  (let [uuid (java.util.UUID/fromString id)
-        attrs (merge user {:updated_at (sqlfn now)})]
+  (let [attrs (merge user {:updated_at (sqlfn now)})]
     (update users 
             (set-fields attrs) 
-            (where {:id uuid}))))
+            (where {:id id}))))
+
+(defn delete-user [id]
+  (delete users
+          (where {:id id})))
