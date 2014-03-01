@@ -25,13 +25,14 @@
   (raw (format "CAST(%s AS %s)" (name x) (name as))))
 
 (defn create-user [user]
-  (insert users
-          (values user)))
+  (let [attrs (merge user {:updated_at (sqlfn now)})]
+    (insert users
+            (values attrs))))
 
-;;TODO do this without exec-raw
 (defn get-user [id]
-  (exec-raw [(str "SELECT * FROM users "
-                  "WHERE users.id = ?::uuid") [id]] :results))
+  (let [uuid (java.util.UUID/fromString id)]
+    (first (select users 
+                   (where {:id uuid})))))
 
 (defn get-user-by-username [username]
   (first (select users
@@ -40,3 +41,10 @@
 (defn list-users
   ([] (select users
               (order :username))))
+
+(defn update-user [id user]
+  (let [uuid (java.util.UUID/fromString id)
+        attrs (merge user {:updated_at (sqlfn now)})]
+    (update users 
+            (set-fields attrs) 
+            (where {:id uuid}))))

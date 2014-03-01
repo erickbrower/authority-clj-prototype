@@ -42,6 +42,9 @@
 (defn list-users-request []
   (do-json-request :get "/users"))
 
+(defn update-user-request [id user]
+  (do-json-request :put (str "/users/" id) (json/generate-string user)))
+
 (defn test-users
   ([] (test-users 1))
   ([n] (cons (json/generate-string {:username (str "testuser" n) :password "12345678"})
@@ -63,3 +66,7 @@
   (let [resp (:body (list-users-request))
         users (json/parse-string resp)]
     (is (= (count users) 10))))
+
+(deftest update-user
+  (let [user-id (:body (create-user-request (first (test-users))))]
+    (is (= (:status (update-user-request user-id {:username "bob"}))))))

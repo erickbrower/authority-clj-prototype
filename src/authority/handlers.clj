@@ -22,11 +22,15 @@
   (let [users (db/list-users)]
     (ring-resp/response (json/generate-string users))))
 
-;;TODO create a response formatter
 (defn show-user [req]
   (let [^String user-id (get-in req [:path-params :id])
-        user (db/get-user user-id)])) 
+        user (db/get-user user-id)]
+    (ring-resp/response (json/generate-string user))))
 
-(defn update-user [req])
+(defn update-user [req]
+  (let [^String user-id (get-in req [:path-params :id])
+        user-attrs (:json-params req)
+        result (db/update-user user-id user-attrs)]
+    (ring-resp/response (json/generate-string result))))
 
 (defn delete-user [req])
