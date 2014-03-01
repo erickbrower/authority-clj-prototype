@@ -11,6 +11,7 @@
                  [korma "0.3.0-RC6"] 
                  [postgresql/postgresql "9.1-901.jdbc4"]
                  [lib-noir "0.8.1"]
+                 [bouncer "0.3.1-beta1"]
                  [cheshire "5.3.1"]]
   :ragtime {:migrations ragtime.sql.files/migrations
             :database ((keyword (or (System/getenv "CLJ_ENV") "dev"))
