@@ -1,22 +1,28 @@
 (ns authority.handlers
   (:require [ring.util.response :as ring-resp]
-            [io.pedestal.service.http :as srv]
             [io.pedestal.service.interceptor :as interceptor :refer [definterceptorfn]]
             [authority.db :as db]
-            [noir.util.crypt :as crypt]
-            [cheshire.core :as json]))
+            [authority.validations :as vali]
+            [noir.util.crypt :as crypt]))
+
+(defn error-response [errors]
+  (-> errors
+      (ring-resp/response)
+      (ring-resp/status 400)))
 
 (defn create-user [req]
   (let [params (:json-params req)
-        username (:username params)
-        pass (:password params)]
-    (if (and username pass)
+        errors (vali/validate-create-user params)]
+    (if-not errors
       (let [salt (crypt/gen-salt)]
-        (-> (db/create-user {:username username
-                             :password_salt salt
-                             :password_digest (crypt/encrypt salt pass)})
-            (ring-resp/response)))
-      (ring-resp/status (ring-resp/response {:error "SNAP!"}) 400))))
+        (->> (:password params)
+             (crypt/encrypt salt)
+             (hash-map :username (:username params)
+                       :password_salt salt
+                       :password_digest)
+             (db/create-user)
+             (ring-resp/response)))
+      (error-response errors))))
 
 (defn list-users [req]
   (ring-resp/response (db/list-users)))
@@ -25,9 +31,13 @@
   (ring-resp/response (db/get-user (:uuid-id req))))
 
 (defn update-user [req]
-  (->> (:json-params req)
-       (db/update-user (:uuid-id req))
-       (ring-resp/response)))
+  (let [params (:json-params req)
+        errors (vali/validate-update-user params)]
+    (if-not errors
+      (->> params
+           (db/update-user (:uuid-id req))
+           (ring-resp/response))
+      (error-response errors))))
 
 (defn delete-user [req]
   (ring-resp/response (db/delete-user (:uuid-id req))))
@@ -40,4 +50,3 @@
                               :uuid-id
                               (java.util.UUID/fromString 
                                 (get-in request [:path-params :id]))))))
-
