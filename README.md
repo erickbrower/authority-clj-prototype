@@ -1,6 +1,7 @@
 # authority
+[![Build Status](https://drone.io/github.com/erickbrower/authority/status.png)](https://drone.io/github.com/erickbrower/authority/latest)
 
-FIXME
+A simple RESTful authentication service.
 
 ## Getting Started
 
