@@ -108,6 +108,22 @@
   (let [user-id (setup-user)]
     (is (= (:status (update-user-request user-id {:username "bob12345"})) 200))))
 
+(deftest update-user-with-short-username
+  (let [user-id (setup-user)]
+    (is (= (:status (update-user-request user-id {:username "bob"})) 400))))
+
+(deftest update-user-with-long-username
+  (let [user-id (setup-user)]
+    (is (= (:status (update-user-request user-id {:username (gen-random-str 31)})) 400))))
+
+(deftest update-user-with-short-password
+  (let [user-id (setup-user)]
+    (is (= (:status (update-user-request user-id {:password "1"})) 400))))
+
+(deftest update-user-with-long-password
+  (let [user-id (setup-user)]
+    (is (= (:status (update-user-request user-id {:username (gen-random-str 101)})) 400))))
+
 (deftest delete-user
   (let [user-id (setup-user)]
     (is (= (:status (delete-user-request user-id)) 200))))
