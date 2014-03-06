@@ -1,16 +1,16 @@
 (ns authority.handlers
   (:require [ring.util.response :as ring-resp]
-            [io.pedestal.service.interceptor :as interceptor :refer [definterceptorfn]]
+            [io.pedestal.service.interceptor :as interceptor :refer [definterceptorfn defhandler interceptor]]
             [authority.db :as db]
             [authority.validations :as vali]
             [noir.util.crypt :as crypt]))
 
 (defn error-response [errors]
-  (-> errors
+  (-> {:errors errors}
       (ring-resp/response)
       (ring-resp/status 400)))
 
-(defn create-user [req]
+(defhandler create-user [req]
   (let [params (:json-params req)
         errors (vali/validate-create-user params)]
     (if-not errors
@@ -24,29 +24,38 @@
              (ring-resp/response)))
       (error-response errors))))
 
-(defn list-users [req]
+(defhandler list-users [req]
   (ring-resp/response (db/list-users)))
 
-(defn show-user [req]
-  (ring-resp/response (db/get-user (:uuid-id req))))
+(defhandler show-user [req]
+  (ring-resp/response (:user-resource req)))
 
-(defn update-user [req]
+(defhandler update-user [req]
   (let [params (:json-params req)
         errors (vali/validate-update-user params)]
     (if-not errors
       (->> params
-           (db/update-user (:uuid-id req))
+           (db/update-user (:user-id req))
            (ring-resp/response))
       (error-response errors))))
 
-(defn delete-user [req]
-  (ring-resp/response (db/delete-user (:uuid-id req))))
+(defhandler delete-user [req]
+  (ring-resp/response (db/delete-user (:user-id req))))
 
-(definterceptorfn parse-uuid-id []
-  (interceptor/on-request ::parse-uuid-id
-                          (fn [request] 
-                            (assoc 
-                              request
-                              :uuid-id
-                              (java.util.UUID/fromString 
-                                (get-in request [:path-params :id]))))))
+(defn try-load-user [context]
+  (let [user-id (->> [:path-params :id]
+                     (get-in (:request context))
+                     (java.util.UUID/fromString))
+        user (db/get-user user-id)]
+    (assoc context :user-id user-id)
+    (if user
+      (assoc context :user-resource user)
+      (throw (ex-info "User does not exist!" {:user-id user-id})))))
+
+(defn respond-not-found [context error]
+  (assoc context :response (ring-resp/not-found "Not Found.")))
+
+(definterceptorfn load-user []
+  (interceptor :name 'load-user
+               :enter try-load-user
+               :error respond-not-found))

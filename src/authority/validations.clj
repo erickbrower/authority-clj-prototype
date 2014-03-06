@@ -1,9 +1,6 @@
 (ns authority.validations
   (:require [bouncer [core :as b] [validators :as v]]))
 
-(def user-username-length
-  (range 8 30))
-
 (def user-username-pattern
   #"^[A-Za-z0-9_]{8,30}$")
 
@@ -12,7 +9,6 @@
 
 (def user-password-pattern
   #"^[A-Za-z0-9_#^@$%&*!]{8,100}$")
-
 
 (def user-creation-rules
   {:username [v/required [v/matches user-username-pattern]]

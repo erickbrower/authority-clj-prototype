@@ -127,3 +127,14 @@
 (deftest delete-user
   (let [user-id (setup-user)]
     (is (= (:status (delete-user-request user-id)) 200))))
+
+(deftest show-user-with-bad-id
+  (is (= (:status (show-user-request "1")) 404)))
+
+(deftest update-user-with-bad-id
+  (is (= (:status (update-user-request "1" {:username "bob"})) 404)))
+
+(deftest delete-user-with-bad-id
+  (is (= (:status (delete-user-request "1")) 404)))
+
+;;TODO: Test for creating duplicate username, should return 400
