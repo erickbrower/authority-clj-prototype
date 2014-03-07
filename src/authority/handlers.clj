@@ -37,19 +37,18 @@
         errors (vali/validate-update-user params)]
     (if-not errors
       (->> params
-           (db/update-user (:user-id req))
+           (db/update-user (:id (:user-resource req)))
            (ring-resp/response))
       (error-response errors))))
 
 (defhandler delete-user [req]
-  (ring-resp/response (db/delete-user (:user-id req))))
+  (ring-resp/response (db/delete-user (:id (:user-resource req)))))
 
 (defn try-load-user [context]
   (let [user-id (->> [:path-params :id]
                      (get-in (:request context))
                      (java.util.UUID/fromString))
         user (db/get-user user-id)]
-    (assoc context :user-id user-id)
     (if user
       (assoc context :user-resource user)
       (throw (ex-info "User does not exist!" {:user-id user-id})))))

@@ -3,13 +3,13 @@
   (:use korma.core
         [korma.db :only (defdb)]))
 
-(def db-spec
+(def db-conf
   {:subprotocol (env :db-subprotocol)
    :subname (str "//" (env :db-host) "/" (env :db-name))
    :user (env :db-user)
    :password (env :db-pass)})
 
-(defdb db db-spec)
+(defdb db db-conf)
 
 (declare users)
 
