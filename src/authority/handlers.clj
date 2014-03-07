@@ -44,6 +44,9 @@
 (defhandler delete-user [req]
   (ring-resp/response (db/delete-user (:id (:user-resource req)))))
 
+(defhandler create-token [req])
+(defhandler show-user-token [req])
+
 (defn try-load-user [context]
   (let [user-id (->> [:path-params :id]
                      (get-in (:request context))
@@ -60,3 +63,4 @@
   (interceptor :name 'load-user
                :enter try-load-user
                :error respond-not-found))
+

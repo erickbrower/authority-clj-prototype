@@ -5,3 +5,4 @@ logs/
 .lein-failures
 .lein-repl-history
 .descriptors/
+.nrepl-port
