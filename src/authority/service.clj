@@ -1,6 +1,5 @@
 (ns authority.service
     (:require [io.pedestal.service.http :as bootstrap]
-              [io.pedestal.service.http.route :as route]
               [io.pedestal.service.http.route.definition :refer [defroutes]]
               [io.pedestal.service.http.body-params :as body-params]
               [authority.handlers :as handlers]))

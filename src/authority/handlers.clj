@@ -1,6 +1,8 @@
 (ns authority.handlers
   (:require [ring.util.response :as ring-resp]
-            [io.pedestal.service.interceptor :as interceptor :refer [definterceptorfn defhandler interceptor]]
+            [io.pedestal.service.interceptor 
+              :as interceptor 
+              :refer [definterceptorfn defhandler interceptor]]
             [authority.db :as db]
             [authority.validations :as vali]
             [noir.util.crypt :as crypt]))
