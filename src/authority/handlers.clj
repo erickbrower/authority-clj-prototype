@@ -1,5 +1,6 @@
 (ns authority.handlers
   (:require [ring.util.response :as ring-resp]
+            [io.pedestal.service.log :as log]
             [io.pedestal.service.interceptor 
               :as interceptor 
               :refer [definterceptorfn defhandler interceptor]]
@@ -27,7 +28,10 @@
       (error-response errors))))
 
 (defhandler list-users [req]
-  (ring-resp/response (db/list-users)))
+  (let [params (:json-params req)]
+    (if (empty? params)
+      (ring-resp/response (db/list-users))
+      (ring-resp/response (db/list-users params)))))
 
 (defhandler show-user [req]
   (ring-resp/response (:user-resource req)))
@@ -63,4 +67,3 @@
   (interceptor :name 'load-user
                :enter try-load-user
                :error respond-not-found))
-

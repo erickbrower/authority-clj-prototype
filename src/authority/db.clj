@@ -1,5 +1,6 @@
 (ns authority.db
-  (:require [environ.core :refer [env]])
+  (:require [environ.core :refer [env]]
+            [io.pedestal.service.log :as log])
   (:use korma.core
         [korma.db :only (defdb)]))
 
@@ -37,9 +38,23 @@
   (first (select users
                  (where {:username username}))))
 
+(defn list-users-by-page
+  ([] (list-users-by-page 25 0)) 
+  ([lim oset] 
+   (sql-only (-> (select users)
+       (order :created_at :ASC)
+       (limit lim)
+       (offset oset)))))
+
 (defn list-users
-  ([] (select users
-              (order :username))))
+  ([] (list-users-by-page))
+  ([args] (-> (list-users-by-page)
+              (where args)
+              (select)))
+  ([args lim oset] (-> (list-users-by-page lim oset)
+                       (where args)
+                       (select))))
+
 
 (defn update-user [id user]
   (let [attrs (merge user {:updated_at (sqlfn now)})]

@@ -4,7 +4,6 @@
               [io.pedestal.service.http.body-params :as body-params]
               [authority.handlers :as handlers]))
 
-
 (defroutes routes
   [[["/users" 
      ^:interceptors [(body-params/body-params) bootstrap/json-body]
