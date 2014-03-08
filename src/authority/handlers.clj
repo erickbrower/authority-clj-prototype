@@ -1,6 +1,5 @@
 (ns authority.handlers
   (:require [ring.util.response :as ring-resp]
-            [io.pedestal.service.log :as log]
             [io.pedestal.service.interceptor 
               :as interceptor 
               :refer [definterceptorfn defhandler interceptor]]

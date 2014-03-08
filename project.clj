@@ -7,6 +7,7 @@
                  [io.pedestal/pedestal.service "0.2.2"]
                  [io.pedestal/pedestal.service-tools "0.2.2"]
                  [environ "0.4.0"]
+                 [org.clojure/tools.logging "0.2.6"]
                  [ragtime/ragtime.sql.files "0.3.4"]
                  [korma "0.3.0-RC6"] 
                  [postgresql/postgresql "9.1-901.jdbc4"]

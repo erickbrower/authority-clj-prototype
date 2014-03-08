@@ -1,8 +1,8 @@
 (ns authority.db
-  (:require [environ.core :refer [env]]
-            [io.pedestal.service.log :as log])
-  (:use korma.core
-        [korma.db :only (defdb)]))
+  (:require [environ.core :refer [env]])
+  (:use korma.core 
+        [korma.db :only (defdb)]
+        [clojure.tools.logging :only (info error)]))
 
 (def db-conf
   {:subprotocol (env :db-subprotocol)
@@ -41,13 +41,13 @@
 (defn list-users-by-page
   ([] (list-users-by-page 25 0)) 
   ([lim oset] 
-   (sql-only (-> (select users)
+   (-> (select* users)
        (order :created_at :ASC)
        (limit lim)
-       (offset oset)))))
+       (offset oset))))
 
 (defn list-users
-  ([] (list-users-by-page))
+  ([] (-> (list-users-by-page) (select)))
   ([args] (-> (list-users-by-page)
               (where args)
               (select)))
