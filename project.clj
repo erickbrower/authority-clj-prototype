@@ -18,6 +18,8 @@
             :database ((keyword (or (System/getenv "CLJ_ENV") "dev"))
                        {:dev "jdbc:postgresql://localhost/authority_dev?user=postgres"
                         :test "jdbc:postgresql://localhost/authority_test?user=postgres"})}
+  :immutant {:context "/auth"
+             :nrepl-port 4123}
   :profiles
   {:dev 
    {:dependencies [[io.pedestal/pedestal.jetty "0.2.2"]]
