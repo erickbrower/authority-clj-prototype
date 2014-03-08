@@ -7,9 +7,9 @@ env:
   - CLJ_ENV=test
 
 script:
-  - lein immutant install LATEST
   - psql -c 'create database authority_test;' -U postgres
   - psql authority_test -c 'create extension "uuid-ossp";' -U postgres
+  - lein immutant install LATEST
   - lein with-profile test ragtime migrate
   - lein with-profile test immutant test
 
