@@ -55,7 +55,6 @@
                        (where args)
                        (select))))
 
-
 (defn update-user [id user]
   (let [attrs (merge user {:updated_at (sqlfn now)})]
     (update users 

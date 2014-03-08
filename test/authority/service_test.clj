@@ -33,6 +33,9 @@
   ([verb url]
    (apply response-for (build-json-request verb url))))
 
+(defn login-request [username password]
+  (do-json-request :post "/login" {:username username :password password}))
+
 (defn create-user-request [body]
   (do-json-request :post "/users" body))
 
@@ -73,7 +76,7 @@
 
 (defn setup-user []
   (let [resp-body (:body (create-user-request (first (test-users))))]
-    (:id (json/parse-string resp-body true))))
+    (json/parse-string resp-body true)))
 
 
 ;; tests
@@ -95,7 +98,7 @@
   (is (= (:status (create-user-request user-with-long-password) 400))))
 
 (deftest show-user
-  (let [user-id (setup-user)]
+  (let [user-id (:id (setup-user))]
     (is (= (:status (show-user-request user-id))) 200)))
 
 (deftest list-users
@@ -105,27 +108,27 @@
     (is (= (count users) 10))))
 
 (deftest update-user
-  (let [user-id (setup-user)]
+  (let [user-id (:id (setup-user))]
     (is (= (:status (update-user-request user-id {:username "bob12345"})) 200))))
 
 (deftest update-user-with-short-username
-  (let [user-id (setup-user)]
+  (let [user-id (:id (setup-user))]
     (is (= (:status (update-user-request user-id {:username "bob"})) 400))))
 
 (deftest update-user-with-long-username
-  (let [user-id (setup-user)]
+  (let [user-id (:id (setup-user))]
     (is (= (:status (update-user-request user-id {:username (gen-random-str 31)})) 400))))
 
 (deftest update-user-with-short-password
-  (let [user-id (setup-user)]
+  (let [user-id (:id (setup-user))]
     (is (= (:status (update-user-request user-id {:password "1"})) 400))))
 
 (deftest update-user-with-long-password
-  (let [user-id (setup-user)]
+  (let [user-id (:id (setup-user))]
     (is (= (:status (update-user-request user-id {:username (gen-random-str 101)})) 400))))
 
 (deftest delete-user
-  (let [user-id (setup-user)]
+  (let [user-id (:id (setup-user))]
     (is (= (:status (delete-user-request user-id)) 200))))
 
 (deftest show-user-with-bad-id
@@ -136,5 +139,21 @@
 
 (deftest delete-user-with-bad-id
   (is (= (:status (delete-user-request "1")) 404)))
+
+(deftest login
+  (let [user (setup-user)
+        username (:username user)
+        password (:password user)]
+    (is (= (:status (login-request username password) 200)))))
+
+(deftest login-with-bad-password
+  (let [user (setup-user)
+        username (:username user)
+        password "1"]
+    (is (= (:status (login-request username password) 400)))))
+
+(deftest login-with-bad-username
+  (is (= (:status (login-request "fail" "12345678") 400))))
+
 
 ;;TODO: Test for creating duplicate username, should return 400

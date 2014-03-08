@@ -4,6 +4,7 @@
               :as interceptor 
               :refer [definterceptorfn defhandler interceptor]]
             [authority.db :as db]
+            [authority.cache :as cache]
             [authority.validations :as vali]
             [noir.util.crypt :as crypt]))
 
@@ -47,7 +48,15 @@
 (defhandler delete-user [req]
   (ring-resp/response (db/delete-user (:id (:user-resource req)))))
 
-(defhandler create-token [req])
+(defhandler login [req]
+  (let [params (:json-params req)
+        user (db/get-user-by-username (:username params))]
+    (if (and user (crypt/compare (:password params) (:password_digest user)))
+      (let [token (first (cache/available-tokens))]
+        (cache/store-token token (keyword (:username user)))
+        (ring-resp/response {:token token :user (dissoc user :password_digest)}))
+      (error-response {:message "Unknown username or password."}))))
+
 (defhandler show-user-token [req])
 
 (defn try-load-user [context]

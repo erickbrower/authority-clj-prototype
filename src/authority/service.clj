@@ -5,7 +5,10 @@
               [authority.handlers :as handlers]))
 
 (defroutes routes
-  [[["/users" 
+  [[["/login"
+     ^:interceptors [(body-params/body-params) bootstrap/json-body]
+     {:post handlers/login}]
+     ["/users" 
      ^:interceptors [(body-params/body-params) bootstrap/json-body]
      {:post handlers/create-user :get handlers/list-users}
      ["/:id" 
@@ -13,17 +16,13 @@
       {:get handlers/show-user 
        :put handlers/update-user 
        :delete handlers/delete-user}
-      ["/tokens"
-      {:post handlers/create-token}
-       ["/:id" {:get handlers/show-user-token}]]]]]])
+      ["/tokens/:token" 
+       {:get handlers/show-user-token}]]]]])
 
 
-;;TODO /users?username=<u>&password=<p> GET
+;;TODO /login POST 
 
-;;TODO /users/:id/tokens POST 
-
-;;TODO /users/:id/tokens/:id GET # is this token valid? eventually returns 404
-
+;;TODO /users/:id/tokens/:token GET # is this token valid? eventually returns 404
 
 ;; Consumed by authority.server/create-server
 ;; See bootstrap/default-interceptors for additional options you can configure
