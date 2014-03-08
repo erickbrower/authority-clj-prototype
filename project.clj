@@ -42,7 +42,7 @@
    :production 
    {:env {:production true}}}
   :plugins 
-  [[lein-environ "0.4.0"][ragtime/ragtime.lein "0.3.4"]]
+  [[lein-environ "0.4.0"][ragtime/ragtime.lein "0.3.4"] [lein-immutant "1.2.0"]]
   :min-lein-version "2.0.0"
   :resource-paths ["config", "resources"]
   :aliases {"run-dev" ["trampoline" "run" "-m" "authority.server/run-dev"]}
