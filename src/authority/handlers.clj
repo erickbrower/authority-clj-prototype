@@ -6,7 +6,8 @@
             [authority.db :as db]
             [authority.cache :as cache]
             [authority.validations :as vali]
-            [noir.util.crypt :as crypt]))
+            [noir.util.crypt :as crypt])
+  (:use [clojure.tools.logging :only (info)]))
 
 (defn error-response [errors]
   (-> {:errors errors}
@@ -14,8 +15,8 @@
       (ring-resp/status 400)))
 
 ;;user handlers
-(defhandler create-user [context]
-  (let [params (:json-params context)
+(defhandler create-user [req]
+  (let [params (:json-params req)
         errors (vali/validate-create-user params)]
     (if-not errors
       (let [salt (crypt/gen-salt)]
@@ -28,62 +29,65 @@
              (ring-resp/response)))
       (error-response errors))))
 
-(defhandler list-users [context]
-  (let [params (:json-params context)]
+(defhandler list-users [req]
+  (let [params (:json-params req)]
     (if (empty? params)
       (ring-resp/response (db/list-users))
       (ring-resp/response (db/list-users params)))))
 
-(defhandler show-user [context]
-  (ring-resp/response (:user-resource context)))
+(defhandler show-user [req]
+  (ring-resp/response (:user-resource req)))
 
-(defhandler update-user [context]
-  (let [params (:json-params context)
+(defhandler update-user [req]
+  (let [params (:json-params req)
         errors (vali/validate-update-user params)]
     (if-not errors
       (->> params
-           (db/update-user (:id (:user-resource context)))
+           (db/update-user (:id (:user-resource req)))
            (ring-resp/response))
       (error-response errors))))
 
-(defhandler delete-user [context]
-  (ring-resp/response (db/delete-user (:id (:user-resource context)))))
+(defhandler delete-user [req]
+  (ring-resp/response (db/delete-user (:id (:user-resource req)))))
 
-(defhandler create-session [context]
-  (let [params (:json-params context)
-        user (db/get-user-by-username (:username params))]
-    (if (and user (crypt/compare (:password params) (:password_digest user)))
+
+;;session handlers
+(defhandler create-session [req]
+  (let [params (:json-params req)
+        user (:user-resource req)]
+    (if (crypt/compare (:password params) (:password_digest user))
       (let [token (first (cache/available-tokens))]
-        (cache/store-session-token token (keyword (:username user)))
+        (cache/store-session-token token (:id user))
         (ring-resp/response {:token token :user (dissoc user :password_digest)}))
-      (error-response {:message "Unknown username or password."}))))
+      (error-response {:username "Uknown username or password" 
+                       :password "Uknown username or password"}))))
 
-(defhandler show-session [context]
-  (ring-resp/response {:token (:token context) }))
+(defhandler show-session [req]
+  (ring-resp/response {:token (:token req)}))
 
-(defhandler delete-session [context])
+(defhandler delete-session [req])
 
-(defn parse-uuid-param [param-key context]
-  (->> [:path-params param-key]
-       (get-in (:request context))
-       (java.util.UUID/fromString)))
-
+;;interceptors
 (defn try-load-user [context]
-  (let [user-id (parse-uuid-param :id context)
+  (let [user-id (->> [:path-params :id]
+                     (get-in (:request context))
+                     (java.util.UUID/fromString))
         user (db/get-user user-id)]
     (if user
-      (assoc context :user-resource user)
+      (assoc-in context [:request :user-resource] user)
       (throw (ex-info "User does not exist!" {:user-id user-id})))))
 
 (defn respond-not-found [context error]
   (assoc context :response (ring-resp/not-found "Not Found.")))
 
 (defn try-load-session [context]
-  (let [token (parse-uuid-param :token context)
-        user-id (:id (:user-resource context))]
+  (let [token (->> [:path-params :token]
+                   (get-in (:request context))
+                   (java.util.UUID/fromString))
+        user-id (get-in (:request context) [:user-resource :id])]
     (if (cache/session-exists? token user-id)
-      (assoc context :token token)
-      (throw (ex-info "Session does not exist!" {:token token })))))
+      (assoc-in context [:request :token] token)
+      (throw (ex-info "Session does not exist!" {:token token})))))
 
 (definterceptorfn load-user []
   (interceptor :name 'load-user

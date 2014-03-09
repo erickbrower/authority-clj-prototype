@@ -20,10 +20,6 @@
         {:get handlers/show-session :delete handlers/delete-session}]]]]]])
 
 
-;;TODO /login POST 
-
-;;TODO /users/:id/tokens/:token GET # is this token valid? eventually returns 404
-
 ;; Consumed by authority.server/create-server
 ;; See bootstrap/default-interceptors for additional options you can configure
 (def service {:env :prod
@@ -36,7 +32,7 @@
 
               ;; Uncomment next line to enable CORS support, add
               ;; string(s) specifying scheme, host and port for
-              ;; allowed source(s):
+              ;; allowed source(s)j
               ;;
               ;; "http://localhost:8080"
               ;;

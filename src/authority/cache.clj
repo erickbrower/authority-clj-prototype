@@ -11,10 +11,12 @@
   (keyword (str token user-id)))
 
 (defn store-session-token [token user-id]
-  (put token-store (create-cache-key token user-id) 1))
+  (let [cache-key (create-cache-key token user-id)]
+    (put token-store cache-key 1)))
 
 (defn session-exists? [token user-id]
-  (contains? token-store (create-cache-key token user-id)))
+  (let [cache-key (create-cache-key token user-id)]
+    (contains? token-store cache-key)))
 
 (defn delete-session-token [token user-id]
   (delete token-store (create-cache-key token user-id)))

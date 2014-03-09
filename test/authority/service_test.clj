@@ -33,8 +33,8 @@
   ([verb url]
    (apply response-for (build-json-request verb url))))
 
-(defn login-request [username password]
-  (do-json-request :post "/login" {:username username :password password}))
+(defn create-session-request [user-id username password]
+  (do-json-request :post (str "/users/" user-id "/sessions") {:username username :password password}))
 
 (defn create-user-request [body]
   (do-json-request :post "/users" body))
@@ -140,20 +140,16 @@
 (deftest delete-user-with-bad-id
   (is (= (:status (delete-user-request "1")) 404)))
 
-(deftest login
+(deftest create-user-session
   (let [user (setup-user)
-        username (:username user)
-        password (:password user)]
-    (is (= (:status (login-request username password) 200)))))
+        user-id (:id user)]
+    (is (= (:status (create-session-request user-id (:username user) "12345678")) 200))))
 
-(deftest login-with-bad-password
-  (let [user (setup-user)
-        username (:username user)
-        password "1"]
-    (is (= (:status (login-request username password) 400)))))
-
-(deftest login-with-bad-username
-  (is (= (:status (login-request "fail" "12345678") 400))))
+;;(deftest create-user-session
+;;        token (:token (json/parse-string (:body resp)))]
+;;    (println (:body resp))
+;;    (println (str route "/" token))
+;;    (is (= (:status (do-json-request :get (str route "/" token))) 200))))
 
 
 ;;TODO: Test for creating duplicate username, should return 400
