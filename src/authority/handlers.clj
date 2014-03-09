@@ -13,8 +13,9 @@
       (ring-resp/response)
       (ring-resp/status 400)))
 
-(defhandler create-user [req]
-  (let [params (:json-params req)
+;;user handlers
+(defhandler create-user [context]
+  (let [params (:json-params context)
         errors (vali/validate-create-user params)]
     (if-not errors
       (let [salt (crypt/gen-salt)]
@@ -27,42 +28,48 @@
              (ring-resp/response)))
       (error-response errors))))
 
-(defhandler list-users [req]
-  (let [params (:json-params req)]
+(defhandler list-users [context]
+  (let [params (:json-params context)]
     (if (empty? params)
       (ring-resp/response (db/list-users))
       (ring-resp/response (db/list-users params)))))
 
-(defhandler show-user [req]
-  (ring-resp/response (:user-resource req)))
+(defhandler show-user [context]
+  (ring-resp/response (:user-resource context)))
 
-(defhandler update-user [req]
-  (let [params (:json-params req)
+(defhandler update-user [context]
+  (let [params (:json-params context)
         errors (vali/validate-update-user params)]
     (if-not errors
       (->> params
-           (db/update-user (:id (:user-resource req)))
+           (db/update-user (:id (:user-resource context)))
            (ring-resp/response))
       (error-response errors))))
 
-(defhandler delete-user [req]
-  (ring-resp/response (db/delete-user (:id (:user-resource req)))))
+(defhandler delete-user [context]
+  (ring-resp/response (db/delete-user (:id (:user-resource context)))))
 
-(defhandler login [req]
-  (let [params (:json-params req)
+(defhandler create-session [context]
+  (let [params (:json-params context)
         user (db/get-user-by-username (:username params))]
     (if (and user (crypt/compare (:password params) (:password_digest user)))
       (let [token (first (cache/available-tokens))]
-        (cache/store-token token (keyword (:username user)))
+        (cache/store-session-token token (keyword (:username user)))
         (ring-resp/response {:token token :user (dissoc user :password_digest)}))
       (error-response {:message "Unknown username or password."}))))
 
-(defhandler show-user-token [req])
+(defhandler show-session [context]
+  (ring-resp/response {:token (:token context) }))
+
+(defhandler delete-session [context])
+
+(defn parse-uuid-param [param-key context]
+  (->> [:path-params param-key]
+       (get-in (:request context))
+       (java.util.UUID/fromString)))
 
 (defn try-load-user [context]
-  (let [user-id (->> [:path-params :id]
-                     (get-in (:request context))
-                     (java.util.UUID/fromString))
+  (let [user-id (parse-uuid-param :id context)
         user (db/get-user user-id)]
     (if user
       (assoc context :user-resource user)
@@ -71,7 +78,19 @@
 (defn respond-not-found [context error]
   (assoc context :response (ring-resp/not-found "Not Found.")))
 
+(defn try-load-session [context]
+  (let [token (parse-uuid-param :token context)
+        user-id (:id (:user-resource context))]
+    (if (cache/session-exists? token user-id)
+      (assoc context :token token)
+      (throw (ex-info "Session does not exist!" {:token token })))))
+
 (definterceptorfn load-user []
   (interceptor :name 'load-user
                :enter try-load-user
+               :error respond-not-found))
+
+(definterceptorfn load-session []
+  (interceptor :name 'load-session
+               :enter try-load-session
                :error respond-not-found))

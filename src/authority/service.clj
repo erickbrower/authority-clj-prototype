@@ -5,19 +5,19 @@
               [authority.handlers :as handlers]))
 
 (defroutes routes
-  [[["/login"
-     ^:interceptors [(body-params/body-params) bootstrap/json-body]
-     {:post handlers/login}]
-     ["/users" 
+  [[["/users" 
      ^:interceptors [(body-params/body-params) bootstrap/json-body]
      {:post handlers/create-user :get handlers/list-users}
      ["/:id" 
       ^:interceptors [handlers/load-user]
-      {:get handlers/show-user 
-       :put handlers/update-user 
+      {:get handlers/show-user
+       :put handlers/update-user
        :delete handlers/delete-user}
-      ["/tokens/:token" 
-       {:get handlers/show-user-token}]]]]])
+      ["/sessions" 
+       {:post handlers/create-session}
+       ["/:token"
+        ^:interceptors [handlers/load-session]
+        {:get handlers/show-session :delete handlers/delete-session}]]]]]])
 
 
 ;;TODO /login POST 
