@@ -33,8 +33,19 @@
   ([verb url]
    (apply response-for (build-json-request verb url))))
 
-(defn create-session-request [user-id username password]
-  (do-json-request :post (str "/users/" user-id "/sessions") {:username username :password password}))
+(defn create-session-request [user-id password]
+  (let [url (str "/users/" user-id "/sessions")
+        body (json/generate-string {:password password})]
+    (do-json-request :post url body)))
+
+(defn check-session-request [user-id token]
+  (let [url (str "/users/" user-id "/sessions/" token)]
+    (do-json-request :get url)))
+
+(defn setup-session-for [user-id]
+  (-> (create-session-request user-id "12345678")
+       (:body)
+       (json/parse-string true)))
 
 (defn create-user-request [body]
   (do-json-request :post "/users" body))
@@ -141,15 +152,12 @@
   (is (= (:status (delete-user-request "1")) 404)))
 
 (deftest create-user-session
-  (let [user (setup-user)
-        user-id (:id user)]
-    (is (= (:status (create-session-request user-id (:username user) "12345678")) 200))))
+  (let [user-id (:id (setup-user))]
+    (is (= (:status (create-session-request user-id "12345678")) 200))))
 
-;;(deftest create-user-session
-;;        token (:token (json/parse-string (:body resp)))]
-;;    (println (:body resp))
-;;    (println (str route "/" token))
-;;    (is (= (:status (do-json-request :get (str route "/" token))) 200))))
-
+(deftest check-user-session
+  (let [user-id (:id (setup-user))
+        token (:token (setup-session-for user-id))]
+    (is (= (:status (check-session-request user-id token)) 200))))
 
 ;;TODO: Test for creating duplicate username, should return 400
