@@ -19,4 +19,5 @@
     (contains? token-store cache-key)))
 
 (defn delete-session-token [token user-id]
-  (delete token-store (create-cache-key token user-id)))
+  (let [cache-key (create-cache-key token user-id)]
+    (delete token-store cache-key)))

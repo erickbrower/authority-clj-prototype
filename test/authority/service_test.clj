@@ -42,6 +42,10 @@
   (let [url (str "/users/" user-id "/sessions/" token)]
     (do-json-request :get url)))
 
+(defn delete-session-request [user-id token]
+  (let [url (str "/users/" user-id "/sessions/" token)]
+    (do-json-request :delete url)))
+
 (defn setup-session-for [user-id]
   (-> (create-session-request user-id "12345678")
        (:body)
@@ -159,5 +163,10 @@
   (let [user-id (:id (setup-user))
         token (:token (setup-session-for user-id))]
     (is (= (:status (check-session-request user-id token)) 200))))
+
+(deftest delete-user-session
+  (let [user-id (:id (setup-user))
+        token (:token (setup-session-for user-id))]
+    (is (= (:status (delete-session-request user-id token)) 204))))
 
 ;;TODO: Test for creating duplicate username, should return 400

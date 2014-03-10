@@ -65,7 +65,12 @@
 (defhandler show-session [req]
   (ring-resp/response {:token (:token req)}))
 
-(defhandler delete-session [req])
+(defhandler delete-session [req]
+  (let [token (:token req)
+        user-id (get-in req [:user-resource :id])]
+    (if (cache/delete-session-token token user-id)
+      (ring-resp/status (ring-resp/response "") 204)
+      (error-response {:token "Could not be deleted"}))))
 
 ;;interceptors
 (defn try-load-user [context]
