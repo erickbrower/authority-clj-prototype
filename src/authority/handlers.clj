@@ -19,12 +19,9 @@
   (let [params (:json-params req)
         errors (vali/validate-create-user params)]
     (if-not errors
-      (let [salt (crypt/gen-salt)]
-        (->> (:password params)
-             (crypt/encrypt salt)
-             (hash-map :username (:username params)
-                       :password_salt salt
-                       :password_digest)
+      (let [digest (crypt/encrypt (:password params))]
+        (-> {:username (:username params)
+              :password_digest digest}
              (db/create-user)
              (ring-resp/response)))
       (error-response errors))))
